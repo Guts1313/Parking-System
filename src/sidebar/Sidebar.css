@@ -1,0 +1,28 @@
+#sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+}
+#sidebar_logo {
+    background-color: gray;
+    padding: 10px;
+    margin: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#sidebar_pages {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.sidebar_button {
+    background: gray;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    margin: 10px;
+    user-select: none;
+    cursor: pointer;
+}

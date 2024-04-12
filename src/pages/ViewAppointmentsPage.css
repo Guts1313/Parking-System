@@ -1,0 +1,18 @@
+.schedule_appointment_root {
+    width: 400px;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px 100px;
+    border-radius: 10px;
+    box-shadow: #0003 0 0 2px 2px;
+    text-align: center;
+}
+.appointment_list_entry {
+    background-color: #ccc;
+    padding: 5px;
+    user-select: none;
+    border-radius: 5px;
+    cursor: pointer;
+}

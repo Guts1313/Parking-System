@@ -1,0 +1,15 @@
+#topbar {
+    display: flex;
+    flex-direction: row-reverse;
+    height: 50px;
+    position: relative;
+}
+#topbar_profile_picture {
+    width: 30px;
+    height: 30px;
+    margin: 10px;
+}
+#topbar_profile_picture > img {
+    width: 30px;
+    height: 30px;
+}
