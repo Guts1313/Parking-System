@@ -1,0 +1,12 @@
+@font-face {
+    font-family: 'Noir Pro';
+    src: url('/fonts/NoirPro-Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+  }
+  
+  /* change fonts, idc, but this looks nice */
+  body {
+    font-family: 'Noir Pro', sans-serif;
+  }
+  
