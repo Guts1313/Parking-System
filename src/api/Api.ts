@@ -60,7 +60,16 @@ export default class Api {
             method: "DELETE"
         }).then(r=>{
             if (r.status == 404) return Promise.resolve(false);
-            else return r.json().then(_=>true);
+            else return r.text().then(_=>true);
         });
+    }
+
+    public search(query: string, page: number, pageSize: number): Promise<Appointment[]> {
+        return fetch(this.endpoint + "/api/appointments/search?" + new URLSearchParams({
+            searchString: query,
+            page: page+"",
+            pageSize: pageSize+""
+        })).then(r=>r.json() as Promise<{content: Appointment[]}>)
+            .then(r=>r.content);
     }
 }

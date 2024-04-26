@@ -7,7 +7,7 @@ import { DashboardLayout } from "./dashboard/Layout";
 import './global.css';
 import Api from "./api/Api.ts";
 
-new Api("http://localhost:8080");
+(window as any)["api"] = new Api("http://localhost:8080");
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <Router>

@@ -43,6 +43,10 @@ export function Content(props: ContentProps) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loadedData, setLoadedData] = useState<boolean>(false);
 
+  function showEntries() {
+    loadEntries(0).then(e=>setEntries(e));
+  }
+
   const openModal = (entry: Entry) => {
     setSelectedEntry(entry);
     setModalOpen(true);
@@ -67,7 +71,7 @@ export function Content(props: ContentProps) {
         datetime: new Date(entry.date + " " + entry.time).toISOString(),
         employee: entry.employeeName
       }).then(()=>{
-        loadEntries(0);
+        showEntries();
       });
       //const updatedEntries = entries.map(e => e === selectedEntry ? entry : e);
       //setEntries(updatedEntries);
@@ -80,8 +84,11 @@ export function Content(props: ContentProps) {
   };
 
   const handleDelete = (entryToDelete: Entry) => {
-    const filteredEntries = entries.filter(entry => entry !== entryToDelete);
-    setEntries(filteredEntries);
+    //const filteredEntries = entries.filter(entry => entry !== entryToDelete);
+    //setEntries(filteredEntries);
+    Api.instance.deleteAppointment(entryToDelete.id).then(()=>{
+      showEntries();
+    });
   };
 
 
