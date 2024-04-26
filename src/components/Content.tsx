@@ -1,104 +1,82 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import { EntryModal } from './EntryModal';
 import { Entry } from '../types/types';
+import Api from "../api/Api.ts";
 
 interface ContentProps {
   title: string;
 }
 
-const formatDate = () => {
-  const date = new Date();
+const formatDate = (date: Date) => {
   const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const month = months[date.getMonth()];
   const day = date.getDate();
   return `${month}, ${day}`;
 };
 
+const pageSize = 10;
+function loadEntries(page: number): Promise<Entry[]> {
+  return Api.instance.getAppointments(page, pageSize).then(appointments=>{
+    let entries: Entry[] = [];
+    for (let appointment of appointments) {
+      let time = new Date(appointment.datetime);
+      entries.push({
+        id: appointment.id,
+        image: "/images/avatar.jpg",
+        time: (time.getHours()+"").padStart(2,"0") + ":" + (time.getSeconds()+"").padStart(2, "0"),
+        date: formatDate(time) + " " + time.getFullYear(),
+        guestName: appointment.guest,
+        guestEmail: appointment.guestEmail,
+        employeeName: appointment.employee,
+        employeeEmail: appointment.employeeEmail,
+        carPlateNumber: appointment.carPlateNumber,
+        description: appointment.description
+      });
+    }
+    return entries;
+  }, e=>Promise.reject(e));
+}
+
 export function Content(props: ContentProps) {
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
-  const [entries, setEntries] = useState<Entry[]>([
-    {
-      employeeName: 'Danila',
-      employeeEmail: 'danila@example.com',
-      image: '/images/2.jpg',
-      date: 'Apr 20, 2024',
-      time: '08:00',
-      guestName: 'Angel',
-      guestEmail: 'angel@example.com',
-      carPlateNumber: 'XYZ123',
-      description: 'Discussing project details.'
-    },    
-    {
-      employeeName: 'Nazim',
-      employeeEmail: 'nazim@example.com',
-      image: '/images/3.jpg',
-      date: 'Apr 21, 2024',
-      time: '09:25',
-      guestName: 'Claudiu',
-      guestEmail: 'cbadea32@gmail.com',
-      carPlateNumber: 'PH01KYS',
-      description: 'Discuss plans with client.'
-    },
-    {
-      employeeName: 'András',
-      employeeEmail: 'andras@example.com',
-      image: '/images/4.jpg',
-      date: 'Apr 24, 2024',
-      time: '12:25',
-      guestName: 'Claudiu',
-      guestEmail: 'cbadea32@gmail.com',
-      carPlateNumber: 'PH01KYS',
-      description: 'Dicuss project implementation.'
-    },
-    {
-      employeeName: 'Angel',
-      employeeEmail: 'angel@example.com',
-      image: '/images/5.jpg',
-      date: 'May 02, 2024',
-      time: '16:00',
-      guestName: 'Danila',
-      guestEmail: 'danila@example.com',
-      carPlateNumber: 'XYZ345',
-      description: 'Furher discuss project implementation.'
-    },
-    {
-      employeeName: 'Claudiu',
-      employeeEmail: 'cbadea32@gmail.com',
-      image: '/images/1.jpg',
-      date: 'Somewhere in 2024',
-      time: '00:00',
-      guestName: 'KPN',
-      guestEmail: 'KPN@fuckingbitches.com',
-      carPlateNumber: 'MUIE123',
-      description: 'Will I have fiber?'
-    },
-    {
-      employeeName: 'KPN',
-      employeeEmail: 'kpn@fuckingbitches.com',
-      image: '/images/avatar.jpg',
-      date: 'Somewhere in 2024',
-      time: '00:00',
-      guestName: 'Claudiu',
-      guestEmail: 'cbadea32@gmail.com',
-      carPlateNumber: 'PH01KYS',
-      description: 'Nah gipsy get shit on.'
-    },
-  ]);
+  const [entries, setEntries] = useState<Entry[]>([]);
+  const [loadedData, setLoadedData] = useState<boolean>(false);
 
   const openModal = (entry: Entry) => {
     setSelectedEntry(entry);
     setModalOpen(true);
   };
+  if (!loadedData) {
+    loadEntries(0).then(e=>{
+      setLoadedData(true);
+      setEntries(e);
+    }, ()=>{console.log("Failed to request entries.")});
+  }
 
   const handleSave = (entry: Entry) => {
+    let promise: Promise<void>;
     if (selectedEntry) {
-      const updatedEntries = entries.map(e => e === selectedEntry ? entry : e);
-      setEntries(updatedEntries);
+      promise = Api.instance.editAppointment({
+        id: entry.id,
+        guest: entry.guestName,
+        guestEmail:  entry.guestEmail,
+        carPlateNumber: entry.carPlateNumber,
+        description: entry.description,
+        employeeEmail: entry.employeeEmail,
+        datetime: new Date(entry.date + " " + entry.time).toISOString(),
+        employee: entry.employeeName
+      }).then(()=>{
+        loadEntries(0);
+      });
+      //const updatedEntries = entries.map(e => e === selectedEntry ? entry : e);
+      //setEntries(updatedEntries);
     } else {
-      setEntries([...entries, entry]);
+      //setEntries([...entries, entry]);
+      // Entry was already added
+      promise = Promise.resolve();
     }
-    setModalOpen(false);
+    promise.then(()=>setModalOpen(false));
   };
 
   const handleDelete = (entryToDelete: Entry) => {
@@ -113,7 +91,7 @@ export function Content(props: ContentProps) {
         <div className="rounded-3xl bg-gray-800 px-6 pt-6">
           <div className="mb-8 flex items-center justify-between text-white">
             <p className="text-2xl font-bold">{props.title}</p>
-            <p>{formatDate()}</p>
+            <p>{formatDate(new Date())}</p>
           </div>
           {entries.length > 0 ? (
           <div>

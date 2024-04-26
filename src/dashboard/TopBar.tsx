@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useDashboardContext } from "./Provider";
 import { AddEntryModal } from '../components/AddEntryModal';
 import { Entry } from '../types/types';
+import Api from "../api/Api.ts";
+import Appointment from "../api/Appointment.ts";
 
 export function TopBar() {
   const { openSidebar } = useDashboardContext();
@@ -12,8 +14,18 @@ export function TopBar() {
   };
 
   const handleSave = (entry: Entry) => {
-    console.log('Entry saved:', entry);
-    handleClose();
+    let app: Omit<Appointment, "id"> = {
+      guest: entry.guestName,
+      guestEmail:  entry.guestEmail,
+      carPlateNumber: entry.carPlateNumber,
+      description: entry.description,
+      employeeEmail: entry.employeeEmail,
+      datetime: new Date(entry.date + " " + entry.time).toISOString(),
+      employee: entry.employeeName
+    };
+    Api.instance.createAppointment(app).then(_=>{
+      handleClose();
+    });
   };
 
   return (

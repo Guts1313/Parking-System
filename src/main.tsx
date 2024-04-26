@@ -5,13 +5,14 @@ import { BrowserRouter as Router } from "react-router-dom";
 import App from "./App";
 import { DashboardLayout } from "./dashboard/Layout";
 import './global.css';
+import Api from "./api/Api.ts";
 
-
+new Api("http://localhost:8080");
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <Router>
       <DashboardLayout>
-        <App />
+        <App/>
       </DashboardLayout>
     </Router>
     ,

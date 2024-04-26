@@ -1,4 +1,5 @@
 export interface Entry {
+    id: number
     employeeName: string;
     image: string;
     time: string;
