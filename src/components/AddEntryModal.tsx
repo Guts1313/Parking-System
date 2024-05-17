@@ -12,7 +12,8 @@ export const AddEntryModal: React.FC<{ isOpen: boolean, onClose: () => void, onS
     guestName: '',
     guestEmail: '',
     carPlateNumber: '',
-    description: ''
+    description: '',
+    id: -1
   });
 
   const handleChange = (field: keyof Entry, value: string) => {
@@ -41,7 +42,7 @@ export const AddEntryModal: React.FC<{ isOpen: boolean, onClose: () => void, onS
 
         {/* modal content: form fields */}
         <div className="p-6 text-white grid grid-cols-1 md:grid-cols-2 gap-4">
-          {Object.keys(newEntry).filter(key => key !== 'image').map((key) => (
+          {Object.keys(newEntry).filter(key => key !== 'image' && key !== 'id').map((key) => (
             <div key={key} className="col-span-1">
               <label className="block text-sm font-medium mb-1">
                 {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}:

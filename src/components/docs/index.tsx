@@ -143,7 +143,7 @@ export function Docs() {
           </div>
           <div className="mt-6 flex flex-wrap pl-6 md:flex-nowrap">
             <JSXIcon /> <span className="px-2 font-medium">Sidebar.tsx</span> :
-            <p className="pl-1">Responsable for the sidebar.</p>
+            <p className="pl-1">Responsible for the sidebar.</p>
             <p className="pl-1">
               Works with <strong>SidebarHeader</strong> and{" "}
               <strong>SidebarItems</strong> components.

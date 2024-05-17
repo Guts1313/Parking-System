@@ -24,6 +24,7 @@ export function TopBar() {
       employee: entry.employeeName
     };
     Api.instance.createAppointment(app).then(_=>{
+      (window as any)["refresh"]();
       handleClose();
     });
   };

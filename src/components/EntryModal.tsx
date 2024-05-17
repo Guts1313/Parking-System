@@ -48,7 +48,7 @@ export const EntryModal: React.FC<EntryModalProps> = ({ isOpen, entry, onClose, 
         {/* content */}
         <div className="p-6 text-white grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(editedEntry ?? {}).map(([key, value]) => {
-            if (key === 'image') return null; // skip the image field
+            if (key === 'id' || key === 'image') return null; // skip the image field
             return isEditing ? (
               <div key={key} className="col-span-1">
                 <label className="block text-sm font-medium mb-1">
