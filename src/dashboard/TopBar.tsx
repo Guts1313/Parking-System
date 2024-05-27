@@ -8,6 +8,8 @@ import Appointment from "../api/Appointment.ts";
 export function TopBar() {
   const { openSidebar } = useDashboardContext();
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [isAuthenticated, setAuthenticated] = useState(true); // add logic
 
   const handleClose = () => {
     setModalOpen(false);
@@ -27,6 +29,13 @@ export function TopBar() {
       (window as any)["refresh"]();
       handleClose();
     });
+  };
+
+  const handleLoginLogout = () => {
+    if (isAuthenticated) {
+      setAuthenticated(false);
+      window.location.href = '/login';
+    }
   };
 
   return (
@@ -94,36 +103,30 @@ export function TopBar() {
                 />
               </svg>
             </button>
-            { /******/}
-
-            <a href="#" className="relative block pr-5">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                />
-              </svg>
-            </a>
-            <a href="#" className="relative block">
+            <div className="relative block">
               <img
                 alt="Claudiu Gabriel"
                 src="/images/1.jpg"
-                className="mx-auto h-10 w-10 rounded-full object-cover"
+                className="mx-auto h-10 w-10 rounded-full object-cover cursor-pointer"
+                onClick={() => setDropdownOpen(!isDropdownOpen)}
               />
-            </a>
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5">
+                  <div className="py-1">
+                    <button
+                      onClick={handleLoginLogout}
+                      className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-gray-700"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
       <AddEntryModal isOpen={isModalOpen} onClose={handleClose} onSave={handleSave} />
-  
     </header>
   );
 }
