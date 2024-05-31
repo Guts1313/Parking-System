@@ -16,12 +16,13 @@ export function TopBar() {
   };
 
   const handleSave = (entry: Entry) => {
-    let app: Omit<Appointment, "id"> = {
+    const app: Omit<Appointment, "id"> = {
       guest: entry.guestName,
       guestEmail:  entry.guestEmail,
       carPlateNumber: entry.carPlateNumber,
       description: entry.description,
       employeeEmail: entry.employeeEmail,
+      employeeId: entry.employeeId,
       datetime: new Date(entry.date + " " + entry.time).toISOString(),
       employee: entry.employeeName
     };

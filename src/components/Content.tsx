@@ -1,8 +1,11 @@
 import {useState} from 'react';
-import { EntryModal } from './EntryModal';
-import { Entry } from '../types/types';
+import {EntryModal} from './EntryModal';
+import {Entry} from '../types/types';
 import Api from "../api/Api.ts";
-import {ContentList} from "./ContentList.tsx";
+import {ArrowLeftIcon, ArrowRightIcon} from "@heroicons/react/outline";
+import Employee from '../api/Employee.ts';
+import EmployeePicker from "./EmployeePicker.tsx";
+import {Timetable} from "./Timetable.tsx";
 
 interface ContentProps {
   title: string;
@@ -27,6 +30,7 @@ function loadEntries(year: number, month: number): Promise<Entry[]> {
         date: time.getFullYear() + " " + (time.getMonth()+1) + " " + time.getDate(),
         guestName: appointment.guest,
         guestEmail: appointment.guestEmail,
+        employeeId: appointment.employeeId,
         employeeName: appointment.employee,
         employeeEmail: appointment.employeeEmail,
         carPlateNumber: appointment.carPlateNumber,
@@ -42,12 +46,15 @@ export function Content(props: ContentProps) {
   (window as any)["refresh"] = ()=>showEntries();
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedEntry, _] = useState<Entry | null>(null);
-  const [entries, setEntries] = useState<Entry[]>([]);
   const [loadedData, setLoadedData] = useState<boolean>(false);
   const [showingDay, setShowingDay] = useState<Date | undefined>(undefined);
+  const [currentData, setCurrentData] = useState<{date: Date, entries: Entry[]}>({date: new Date(), entries: []});
+  const [pickedEmployees, setPickedEmployees] = useState<Employee[]>([]);
 
-  const now = new Date();
-  const targetMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const pickedEmployeeIds = pickedEmployees.map(e=>e.id);
+  const filtered = currentData.entries.filter(e=>pickedEmployeeIds.indexOf(e.employeeId) > -1);
+
+  const targetMonth = new Date(currentData.date.getFullYear(), currentData.date.getMonth(), 1);
   const dateLocale = Intl?.DateTimeFormat()?.resolvedOptions()?.locale ?? navigator.language;
   const locale = new Intl.Locale(dateLocale);
   const firstDayLocale = (locale as any)["weekInfo"] ? ((locale as any)["weekInfo"] as any)["firstDay"] as number : 1;
@@ -57,14 +64,15 @@ export function Content(props: ContentProps) {
   nextMonth.setDate(nextMonth.getDate() - 1);
   const dayCount = nextMonth.getDate();
 
-  function showEntries() {
-    loadEntries(targetMonth.getFullYear(), targetMonth.getMonth() + 1).then(e => setEntries(e));
+  function showEntries(date?: Date) {
+    const actual = date ?? targetMonth;
+    return loadEntries(actual.getFullYear(), actual.getMonth() + 1).then(e => setCurrentData({date: actual, entries: e}));
   }
 
   if (!loadedData) {
     loadEntries(targetMonth.getFullYear(), targetMonth.getMonth() + 1).then(e => {
       setLoadedData(true);
-      setEntries(e);
+      setCurrentData({...currentData, entries: e});
     }, () => {
       console.log("Failed to request entries.")
     });
@@ -81,7 +89,8 @@ export function Content(props: ContentProps) {
         description: entry.description,
         employeeEmail: entry.employeeEmail,
         datetime: new Date(entry.date + " " + entry.time).toISOString(),
-        employee: entry.employeeName
+        employee: entry.employeeName,
+        employeeId: entry.employeeId
       }).then(() => {
         showEntries();
       });
@@ -99,7 +108,7 @@ export function Content(props: ContentProps) {
   for (let i = 0; i < dayCount; i++) {
     dayMapped[i] = [];
   }
-  for (const entry of entries) {
+  for (const entry of filtered) {
     const date = new Date(entry.date);
     const index = date.getDate() - 1;
     dayMapped[index].push(entry);
@@ -125,17 +134,53 @@ export function Content(props: ContentProps) {
   let root;
   if (showingDay) {
     console.log("Render list ", dayMapped[showingDay.getDate()-1]);
+    /*
     root = <ContentList key={JSON.stringify(dayMapped)} refreshHandler={()=>showEntries()}
                         exitHandler={()=>setShowingDay(undefined)}
                         date={showingDay}
                         entries={dayMapped[showingDay.getDate()-1]}/>;
+    */
+    root = <Timetable
+        key={JSON.stringify(dayMapped)}
+        startDate={new Date(new Date(showingDay).setDate(showingDay.getDate()-1))}
+        endDate={new Date(new Date(showingDay).setDate(showingDay.getDate()+1))}
+        employees={pickedEmployees}
+        entries={filtered}
+        exitHandler={()=>setShowingDay(undefined)}
+        refreshHandler={()=>showEntries()}
+        navigationHandler={async (offset)=>{
+          const copy = new Date(showingDay);
+          const date = new Date(copy.setDate(copy.getDate() + offset));
+          await showEntries(date);
+          setShowingDay(date);
+        }}/>
   } else {
     root = <div className="flex flex-wrap">
       <div className="mt-8 w-full lg:mt-0 lg:pl-4">
         <div className="rounded-3xl bg-gray-800 p-6">
+          <div className="mb-8 flex flex-col text-white select-none">
+            <p className="text-2xl font-bold">Selected Employees</p>
+            <EmployeePicker key={"picker-" + JSON.stringify(Api.instance.getCachedEmployees())}
+                selected={pickedEmployees}
+                employees={Api.instance.getCachedEmployees()}
+                multiple={true}
+                onUpdate={(e)=>{
+                  setPickedEmployees(e);
+            }}/>
+          </div>
           <div className="mb-8 flex items-center justify-between text-white">
             <p className="text-2xl font-bold">{props.title}</p>
-            <p>{formatDate(new Date())}</p>
+            <div className="flex flex-row">
+              <ArrowLeftIcon className="cursor-pointer h-5 w-5 mr-2" onClick={() => {
+                const copy = new Date(targetMonth);
+                showEntries(new Date(copy.setMonth(copy.getMonth() - 1)));
+              }}/>
+              <p style={{width: "200px"}} className="flex justify-center items-center">{formatDate(targetMonth)}</p>
+              <ArrowRightIcon className="cursor-pointer h-5 w-5 mr-2" onClick={() => {
+                const copy = new Date(targetMonth);
+                showEntries(new Date(copy.setMonth(copy.getMonth() + 1)));
+              }}/>
+            </div>
           </div>
           <div className="rounded-2xl overflow-hidden flex h-full flex-col gap-1 bg-gray-600">
             <div className="flex grow flex-row gap-1" style={{height: 50}}>
@@ -145,17 +190,19 @@ export function Content(props: ContentProps) {
               </div>)}
             </div>
             {dayNumbers.map((week, weekIndex) => <div key={"week-" + weekIndex + ""}
-                                                      className="flex shrink-0 grow flex-row gap-1" style={{height: 100}}>
+                                                      className="flex shrink-0 grow flex-row gap-1"
+                                                      style={{height: 100}}>
               {week.map((day, dayIndex) => <div key={"day-" + weekIndex + "-" + dayIndex + "-outer"}
                                                 className="relative flex shrink-0 grow basis-0 justify-center items-center bg-gray-800 text-white">
                 <div className="absolute left-2 top-2 text-gray-500">
                   {day ? day + "" : ""}
                 </div>
                 {day !== undefined && dayMapped[day - 1].length > 0 ?
-                    <div key={"day-" + weekIndex + "-" + dayIndex + "-inner"} className="cursor-pointer flex justify-center items-center"
+                    <div key={"day-" + weekIndex + "-" + dayIndex + "-inner"}
+                         className="cursor-pointer flex justify-center items-center"
                          onClick={() => {
                            const newDate = new Date(targetMonth);
-                           newDate.setDate(newDate.getDate()+day-1);
+                           newDate.setDate(newDate.getDate() + day - 1);
                            setShowingDay(newDate);
                          }}>
                       {dayMapped[day - 1].length} appointment{dayMapped[day - 1].length != 1 ? "s" : ""}

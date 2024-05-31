@@ -1,12 +1,30 @@
 import Appointment from "./Appointment.ts";
+import Employee from "./Employee.ts";
 
 export default class Api {
     public static instance: Api;
     private readonly endpoint: string;
+    private employees: Employee[];
 
     constructor(endpoint: string) {
         Api.instance = this;
         this.endpoint = endpoint;
+        this.employees = [];
+        this.getEmployees(0, 10000).then(emp=>{
+            this.employees = emp;
+        });
+    }
+
+    public getCachedEmployees(): Employee[] {
+        return this.employees;
+    }
+
+    public getEmployees(page: number, pageSize: number): Promise<Employee[]> {
+        return fetch(this.endpoint + "/api/employee/pages?" + new URLSearchParams({
+            page: page+"",
+            pageSize: pageSize+""
+        })).then(r=>r.json() as Promise<{content: Employee[]}>)
+            .then(e=>e.content);
     }
 
     public getAppointments(page: number, pageSize: number): Promise<Appointment[]> {
@@ -21,7 +39,10 @@ export default class Api {
         return fetch(this.endpoint + "/api/appointments/calendar_overview?" + new URLSearchParams({
             year: year+"",
             month: month+""
-        })).then(r=>r.json() as Promise<Appointment[]>);
+        })).then(r=>{
+            if (r.status == 404) return Promise.resolve([]);
+            else return r.json() as Promise<Appointment[]>;
+        });
     }
 
     public getAppointment(id: number): Promise<Appointment|null> {
@@ -46,13 +67,12 @@ export default class Api {
           .then(str => parseInt(str));
     }
 
-    public editAppointment(data: Appointment): Promise<void> {
+    public editAppointment(data: Appointment): Promise<string> {
         return fetch(this.endpoint + "/api/appointments/" + data.id, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify(data)
-        }).then(r=> r.text())
-            .then(_=>{});
+        }).then(r=> r.text());
     }
 
     public deleteAppointment(id: number): Promise<boolean> {

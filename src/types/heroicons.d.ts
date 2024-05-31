@@ -5,5 +5,10 @@ declare module '@heroicons/react/outline' {
     export const SaveIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
     export const PlusIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
     export const ArrowLeftIcon:React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    export const ArrowRightIcon:React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    export const ArrowDownIcon:React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    export const ArrowUpIcon:React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    export const ViewListIcon:React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    export const ViewGridIcon:React.ComponentType<React.SVGProps<SVGSVGElement>>;
   }
   

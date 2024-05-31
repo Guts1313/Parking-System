@@ -39,6 +39,7 @@ export function ContentList(props: ContentListProps) {
                 carPlateNumber: entry.carPlateNumber,
                 description: entry.description,
                 employeeEmail: entry.employeeEmail,
+                employeeId: entry.employeeId,
                 datetime: new Date(entry.date + " " + entry.time).toISOString(),
                 employee: entry.employeeName
             }).then(()=>{
